@@ -7,6 +7,7 @@
     <title>Dynamic HTML Table to Excel</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.3/xlsx.core.min.js"></script>
     <!-- <script type="text/javascript" src="renderjson.js"></script>
+
      CSS LAYOUT-->
 
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
@@ -22,8 +23,7 @@
     <!-- JAVASCRIPT CODE -->
     <script>
         let languagesInScope = []
-        let vendorsInScope = []
-        let vendorsInScopeString = vendorsInScope.map((item) => item.split(","))
+        let vendorsInScopeString = []
         let result = []
         let languageGroups = [];
         let vendorsObject = []
@@ -34,20 +34,26 @@
         //populates the vendorsObject and renders the vendor line in the UI
         function checkLanguagesChexbox(checkboxId) {
             let VendorsListedInHTML = []
-
             let checkbox = document.getElementById(checkboxId);
 
             if (checkbox.checked) {
                 languagesInScope.push(checkboxId);
+                languagesInScope.sort()
             }
+            //checks which languages have been removed, first it deletes it from the UI
+            //and then it loops through vendorsInScopeString and deletes it there
             if (!checkbox.checked) {
                 let index = languagesInScope.indexOf(checkbox.id)
                 const deleteItem = languagesInScope.splice(index, 1)
+                for (let i = vendorsInScopeString.length - 1; i >= 0; i--) {  //loop bakcwards so it doesn't miss any item
+                    if (vendorsInScopeString[i].includes(checkbox.id)) {
+                        vendorsInScopeString.splice(i, 1)
+                    }
+                }
             }
 
             for (let i = 0; i < languagesInScope.length; i++) {
                 //1. this loop goes through all the languages we have chosen
-
                 for (let index = 0; index < arrayOfVendors.length; index++) {
                     //2. then it loops through all the vendors in the CSV, checks who of those vendors has the language we're looping through atm
                     // and adds those vendors to the VendorsListedInHTML that will be rendered after both loops have finished 
@@ -57,38 +63,21 @@
                     //for the next step when we have to access each element as separated info (element language, element vendorId, etc)
 
                     if (languagesInScope[i] == vendorArray[0]) {
-
-                        if (!vendorsInScope.includes(vendorString)) {
-                            vendorsInScope.push(vendorString)
-                        } else {
-
-                            let index = vendorsInScope.indexOf(vendorString)
-                            //const deleteItem = vendorsInScope.splice(index, 1)
+                        if (!vendorsInScopeString.includes(vendorString)) {
+                            vendorsInScopeString.push(vendorString)
                         }
-
-                        VendorsListedInHTML.push(`<p id="${vendorArray[1]}"> <b>${vendorArray[0]}: </b>${vendorArray[1]} - ${vendorArray[2]} - ${vendorArray[3]}</p>`); //push the vendor line that will be rendered afterwards 
-                        vendorsObject.push({
-                            language: vendorArray[0],
-                            vendorName: vendorArray[1],
-                            transRate: vendorArray[2],
-                            proofRate: vendorArray[3],
-                            teprate: vendorArray[4]
-                        })
-
-
+                        VendorsListedInHTML.push(`<p id="${vendorArray[1]}"> <b>${vendorArray[0]}: </b>${vendorArray[1]} - ${vendorArray[2]} - ${vendorArray[3]}</p>`); //push the vendor line that will be rendered afterwards    
                     }
+
                 }
             }
-            console.log(vendorsInScope);
-            console.log(vendorsInScopeString);
             document.getElementById('VendorsListed').innerHTML = VendorsListedInHTML.join(""); //after the loop has finished, this line renders all the vendors lines we have previously pushed into VendorsListedInHTML
         }
 
 
         function calculateTEPMU(mu) {
+            const dataObject = findMode()
             let muInnerHTML = []
-            let languageGroups = [];
-
             let tepBox = document.getElementById("TEP").checked;
             let transBox = document.getElementById("TR").checked;
             let prfBox = document.getElementById("PR").checked;
@@ -96,16 +85,13 @@
             let B2 = 0.12
             let B3 = 0.56
 
-            for (let i = 0; i < vendorsObject.length; i++) {
+            for (let i = 0; i < languagesInScope.length; i++) {
+                let lang = languagesInScope[i]
+                // console.log(languagesInScope[i]);
+                console.log(dataObject.lang);
 
             }
-            //Group the vendors per language in an array
-            vendorsObject.forEach(obj => {
-                if (!languageGroups[obj.language]) {
-                    languageGroups[obj.language] = [];
-                }
-                languageGroups[obj.language].push(obj);
-            });
+
 
             for (let language in languageGroups) {
                 //console.log(languageGroups);
@@ -119,8 +105,6 @@
 
             switch (tepBox) {
                 case tepBox:
-                    findMode()
-                    console.log(tepBox);
                     break;
                 case transBox:
 
@@ -136,37 +120,20 @@
         }
 
 
-        const findMode = (array) => {
-            console.log(array);
+        const findMode = () => {
+            let languagesGrouped = {}
+            let languagesRatesGrouped
+            let vendorsInScopeArr = vendorsInScopeString.map((item) => item.split(","))
 
-            let objectsWithSameLanguage;
-
-            const groupVendorsPerLanguage = () => {
-                array.forEach(obj => {
-                    if (!languageGroups[obj.language]) {
-                        languageGroups[obj.language] = [];
-                    }
-                    languageGroups[obj.language].push(obj);
-                });
-                // console.log(languageGroups);
-                return languageGroups
-            }
-
-            groupVendorsPerLanguage()
-
-
-            for (let language in languageGroups) {
-                console.log(language);
-
-
-                if (languageGroups.hasOwnProperty(language)) {
-                    objectsWithSameLanguage = languageGroups[language];
-                    // Perform action on objects with the same language
-                    //console.log(`Objects with language ${language}:`, objectsWithSameLanguage);
-                    // Perform your action here
+            vendorsInScopeArr.forEach(innerArray => {
+                let key = innerArray[0];
+                if (!languagesGrouped[key]) {
+                    languagesGrouped[key] = [];
                 }
-            }
+                languagesGrouped[key].push(innerArray.slice(1)); // Exclude the first item
+            });
 
+            return languagesGrouped
 
 
             let frequencyMap = {};
@@ -199,46 +166,45 @@
 
 <body>
     <div class="cover-container d-flex h-100 p-3 mx-auto flex-column">
-        <div>
-            <p class="lead"><label>Calculate MU based on average rates</label></p>
-            <ol>
-                <li>Add the MU you need to reach.</li>
-                <li>Upload the txt rates table.</li>
-                <li>Click the box of all the languages rates you need</li>
-                <li>Click the Generate MU button</li>
-            </ol>
-        </div>
 
-        <div class="container-fluid"> <label>MU to achieve: </label>
-            <input id="MU" type="number" value="2" min="0" step="0.1" />
-            <input type="checkbox" id="TEP" name="TEP" />
-            <label for="scales">TEP</label>
-            <input type="checkbox" id="TR" name="TR" />
-            <label for="scales">TRA</label>
-            <input type="checkbox" id="PR" name="PR" />
-            <label for="scales">PRF</label>
-            <button onclick="findMode()">test</button>
-            <button onclick="calculateTEPMU(MU)">Generate MU</button>
-        </div>
-
-
-        <div class="container-fluid">
-
-            <label for="jsonFile">File:</label>
-            <input class="btn btn-light rounded-pill px-3" id="csvFile" name="file" type="file" />
-            <br></br>
-            <div id="VendorsListed"></div>
-
-            <div class="rounded p-3 mt-3 text-white" style="background-color: rgba(182, 185, 190, 0.699);" id="json-UI">
-                <div id="myTable"></div>
+        <div class="row">
+            <div class="col-sm-8" id="Main-div">
+                <p class="lead"><label>Calculate MU based on average rates</label></p>
+                <ol>
+                    <li>Add the MU you need to reach.</li>
+                    <li>Upload the txt rates table.</li>
+                    <li>Click the box of all the languages rates you need</li>
+                    <li>Click the Generate MU button</li>
+                </ol>
+                <div class="container-fluid"> <label>MU to achieve: </label>
+                    <input id="MU" type="number" value="2" min="0" step="0.1" />
+                    <input type="checkbox" id="TEP" name="TEP" />
+                    <label for="scales">TEP</label>
+                    <input type="checkbox" id="TR" name="TR" />
+                    <label for="scales">TRA</label>
+                    <input type="checkbox" id="PR" name="PR" />
+                    <label for="scales">PRF</label>
+                    <button onclick="findMode()">test</button>
+                    <button onclick="calculateTEPMU(MU)">Generate MU</button>
+                </div>
+                <div class="container-fluid" id="dinamycMuDiv"></div>
+                <div class="container-fluid">
+                    <label for="jsonFile">File:</label>
+                    <input class="btn btn-light rounded-pill px-3" id="csvFile" name="file" type="file" />
+                    <br></br>
+                    <div id="VendorsListed"></div>
+                </div>
             </div>
-
+            <div class="col-sm-4" id="languageListDiv">
+                <div class="rounded p-3 mt-3 text-white" style="background-color: rgba(182, 185, 190, 0.699);"
+                    id="json-UI">
+                    <div id="myTable"></div>
+                </div>
+            </div>
         </div>
-
 
         <nav class="navbar bg-dark  fixed-bottom border-bottom border-body text-white">
-            <span class="navbar-brand mb-0 h1">HTML tool to filter JSON files, created by Alicia Olivares canales
-                for my use</span>
+            <span class="navbar-brand mb-0 h1">HTML tool</span>
         </nav>
     </div>
 
