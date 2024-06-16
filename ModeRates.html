@@ -30,7 +30,7 @@
 
 <body>
     <div class="cover-container d-flex h-100 p-3 mx-auto flex-column">
-        <nav class="navbar fixed-top navbar-dark" style="background-color: #71839Cff;">
+        <nav class="navbar fixed-top navbar-dark" style="background-color: #3D5D86ff;">
             <span class="navbar-brand mb-0 p-1">CSV structure:
                 column A - Language >
                 column B - Vendor name >
@@ -114,7 +114,7 @@
                 //in the UI with a checkbox that will be used later to tell the code the languages we need
                 for (let i = 0; i < arrayOfVendors.length; i++) {
                     let item = arrayOfVendors[i].split(",")
-                    let itemLanguage = item[0].substr(1)
+                    let itemLanguage = item[1]
                     const duplicated = languages.includes(itemLanguage)
 
                     if (!duplicated && itemLanguage !== '' && itemLanguage !== '#N/A' && itemLanguage !== 'ARGET') {
@@ -151,7 +151,6 @@
             let VendorsListedInHTML = []
             let checkbox = document.getElementById(checkboxId);
 
-
             if (checkbox.checked) {
                 languagesInScope.push(checkboxId);
                 languagesInScope.sort()
@@ -160,7 +159,9 @@
             //and then it loops through vendorsInScopeString and deletes it there
             if (!checkbox.checked) {
                 let index = languagesInScope.indexOf(checkbox.id)
+                
                 const deleteItem = languagesInScope.splice(index, 1)
+
                 for (let i = vendorsInScopeString.length - 1; i >= 0; i--) {  //loop bakcwards so it doesn't miss any item
                     if (vendorsInScopeString[i].includes(checkbox.id)) {
                         vendorsInScopeString.splice(i, 1)
@@ -169,8 +170,10 @@
             }
             //Populates vendorsInScopeString
             for (let i = 0; i < languagesInScope.length; i++) {
+
                 //1. this loop goes through all the languages we have chosen
                 for (let index = 0; index < arrayOfVendors.length; index++) {
+
                     //2. then it loops through all the vendors in the CSV, checks who of those vendors has the language we're looping through atm
                     // and adds those vendors to the VendorsListedInHTML that will be rendered after both loops have finished 
 
@@ -178,10 +181,10 @@
                     let vendorArray = vendorString.split(",") //this line is converting the vendor line into an array, this is needed
                     //for the next step when we have to access each element as separated info (element language, element vendorId, etc)
 
-                    if (languagesInScope[i] == vendorArray[0]) {
+                    if (vendorArray[0] === 'English' && languagesInScope[i] == vendorArray[1]) {
                         if (!vendorsInScopeString.includes(vendorString)) {
                             vendorsInScopeString.push(vendorString)
-                            vendorsArrayOfObjects.push({ language: vendorArray[0], name: vendorArray[1], tra: vendorArray[2], prf: vendorArray[3], tep: vendorArray[4] })
+                            vendorsArrayOfObjects.push({ language: vendorArray[1], name: vendorArray[2], tra: vendorArray[3], prf: vendorArray[4], tep: vendorArray[5] })
 
                         }
                         VendorsListedInHTML.push(`<p id="${vendorArray[1]}"> <b>${vendorArray[0]}: </b>${vendorArray[1]} - ${vendorArray[2]} - ${vendorArray[3]} - ${vendorArray[4]}</p>`); //push the vendor line that will be rendered afterwards    
@@ -262,7 +265,6 @@
                         arrayOfRates.push({ language: language, rate: clientRate })
                     }
                 }
-                console.log(arrayOfRates);
                 return arrayOfRates
 
             }
@@ -295,7 +297,6 @@
                         let clientRate = mostOcurredRate * MU   //calculate what rate should we asked base on the MU we need
                         UIelementWithRates.push(`<b>${language} - ${service}</b><br> Client rate with MU ${MU}: <b>${clientRate.toFixed(3)}</b><br>Most ocurred rate: <b>${mostOcurredRate}</b><br>`)
                         arrayOfRates.push({ language: language, rate: clientRate })
-                        console.log(arrayOfRates);
                     }
                 }
 
@@ -311,7 +312,6 @@
                     let sum;
                     if (prfRate[i].language == tradRate[i].language) {
                         sum = prfRate[i].rate + tradRate[i].rate
-                        console.log(sum.toFixed(3));
                         TEP_UIelementWithRates.push(`<b>${tradRate[i].language} - ${service}</b><br> Client rate with MU ${MU}: <b>${sum.toFixed(3)}</b><br>`)
                     }
                 }
