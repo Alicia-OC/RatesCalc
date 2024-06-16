@@ -17,6 +17,9 @@
         Author: [Alicia Olivares Canales]
         Date: [06/06/2024]
         Description: App to calculate client's rates based on our most ocurred rates from our vendors pool and the MU we need to achieve
+        This small app has been programmed only in this HTML without any kind of backend or dependencies for two reasons:
+        1. I don't want to host this anywhere.
+        2. I needed it to be easy for anyone to use, so opening an HTML with a few basic buttons seemed the perfect solution.
         */
 
         body {
@@ -31,25 +34,32 @@
 <body>
     <div class="cover-container d-flex h-100 p-3 mx-auto flex-column">
         <nav class="navbar fixed-top navbar-dark" style="background-color: #3D5D86ff;">
-            <span class="navbar-brand mb-0 p-1">CSV structure:
-                column A - Language >
-                column B - Vendor name >
-                column C - TR rate >
-                column D - PR rate >
-                column E - TEP rate</span>
+            <span class="navbar-brand mb-0 p-1">CSV column structure:
+                A - Source >
+                B - Target >
+                C - Vendor name >
+                D - TR rate >
+                E - PR rate >
+                F - TEP rate</span>
         </nav>
 
         <div class="row" style="margin-top: 10px;">
             <div class="col-sm-8" id="Main-div">
                 <p class="lead"><label>Calculate client rates based on MU and the most ocurred rate from our pool of
                         vendors</label></p>
+                        <p>It will only accept English as source</p>
                 <ol>
-                    <li>You most use the following CSV structure:
-                        column A - Language >
-                        column B - Vendor name >
-                        column C - TR rate >
-                        column D - PR rate >
-                        column E - TEP rate
+                    <li>You most use the following CSV column structure:
+                        <ul>
+                            <li>A - Source (English only)</li>
+                            <li>B - Target</li>
+                            <li> C - Vendor name</li>
+                            <li>D - TR rate</li>
+                            <li> E - PR rate</li>
+                            <li> F - TEP rate</li>
+
+                        </ul>
+
                     </li>
                     <li>Upload the CSV</li>
                     <li>Add the MU you need to reach, it's 2 by default.</li>
@@ -159,7 +169,7 @@
             //and then it loops through vendorsInScopeString and deletes it there
             if (!checkbox.checked) {
                 let index = languagesInScope.indexOf(checkbox.id)
-                
+
                 const deleteItem = languagesInScope.splice(index, 1)
 
                 for (let i = vendorsInScopeString.length - 1; i >= 0; i--) {  //loop bakcwards so it doesn't miss any item
