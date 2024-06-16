@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dynamic HTML Table to Excel</title>
+    <title>Mode rates</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.3/xlsx.core.min.js"></script>
     <!-- <script type="text/javascript" src="renderjson.js"></script>
 
@@ -16,7 +16,7 @@
         /* 
         Author: [Alicia Olivares Canales]
         Date: [06/06/2024]
-        Description: Custom CSS for handling text overflow with margins.
+        Description: App to calculate client's rates based on our most ocurred rates from our vendors pool and the MU we need to achieve
         */
 
         body {
@@ -26,39 +26,36 @@
         }
     </style>
 
-    <!-- JAVASCRIPT CODE PART 2 > Part 1 is on the bottom of the file, it needs to be there for the code to work.-->
-    <script>
-
-    </script>
-
-
-
 </head>
 
 <body>
     <div class="cover-container d-flex h-100 p-3 mx-auto flex-column">
         <nav class="navbar fixed-top navbar-dark" style="background-color: rgb(123, 138, 160);">
             <span class="navbar-brand mb-0 p-1">CSV structure:
-                column A - vendor name |
-                column B - TR rate |
-                column C - PR rate |
-                column D - TEP rate</span>
+                column A - Language >
+                column B - Vendor name >
+                column C - TR rate >
+                column D - PR rate >
+                column E - TEP rate</span>
         </nav>
 
         <div class="row" style="margin-top: 10px;">
             <div class="col-sm-8" id="Main-div">
-                <p class="lead"><label>Calculate MU based on average rates</label></p>
+                <p class="lead"><label>Calculate client rates based on MU and the most ocurred rate from our pool of
+                        vendors</label></p>
                 <ol>
                     <li>You most use the following CSV structure:
-                        column A - vendor name
-                        column B - TR rate
-                        column C - PR rate
-                        column D - TEP rate
+                        column A - Language >
+                        column B - Vendor name >
+                        column C - TR rate >
+                        column D - PR rate >
+                        column E - TEP rate
                     </li>
-                    <li>Add the MU you need to reach.</li>
-                    <li>Upload the txt rates table.</li>
-                    <li>Click the box of all the languages rates you need</li>
-                    <li>Click the Generate MU button</li>
+                    <li>Upload the CSV</li>
+                    <li>Add the MU you need to reach, it's 2 by default.</li>
+                    <li>Select all the languages you need</li>
+                    <li>Choose a service - you will only be able to calculate TR or PR, for now.</li>
+                    <li>Generate de MU</li>
                 </ol>
 
                 <div class="container-fluid"> <label>MU to achieve: </label>
@@ -70,6 +67,8 @@
                     <input type="checkbox" id="PR" name="myCheckbox" value="3" onclick="selectOnlyThis(this)" />
                     <label for="scales">PRF</label>
                     <button onclick="findMode()">Generate MU</button>
+                    <button onclick="findMode_2()">Generate MU_2</button>
+
                 </div>
                 <br>
                 <div class="container-fluid" id="dinamycMuDiv"></div>
@@ -137,7 +136,7 @@
             calculateTEPMU(event.target.value)
         })
 
-        //ONCE THE APP HAS THE DATA AND HAS RENDERED ALL THE LANGUAGES, YOU CAN NOW TO EVERYTHING ELSE THANKS TO THE CODE BELOW:
+        //ONCE THE APP HAS THE DATA AND HAS RENDERED ALL THE LANGUAGES, YOU CAN NOW DO EVERYTHING ELSE THANKS TO THE CODE BELOW:
 
         let languagesInScope = []
         let vendorsInScopeString = []
@@ -145,7 +144,7 @@
         let languageGroups = [];
         let vendorsObject = []
         let ratesGrouped = {}
-
+        let vendorsArrayOfObjects = []
 
         //This function checks the languages we have picked from the list,
         // then looks into the CSV we have uploaded, selects the vendors whose language matches the ones in scope
@@ -153,6 +152,7 @@
         function checkLanguagesChexbox(checkboxId) {
             let VendorsListedInHTML = []
             let checkbox = document.getElementById(checkboxId);
+
 
             if (checkbox.checked) {
                 languagesInScope.push(checkboxId);
@@ -183,6 +183,8 @@
                     if (languagesInScope[i] == vendorArray[0]) {
                         if (!vendorsInScopeString.includes(vendorString)) {
                             vendorsInScopeString.push(vendorString)
+                            vendorsArrayOfObjects.push({ language: vendorArray[0], name: vendorArray[1], tra: vendorArray[2], prf: vendorArray[3], tep: vendorArray[4] })
+
                         }
                         VendorsListedInHTML.push(`<p id="${vendorArray[1]}"> <b>${vendorArray[0]}: </b>${vendorArray[1]} - ${vendorArray[2]} - ${vendorArray[3]} - ${vendorArray[4]}</p>`); //push the vendor line that will be rendered afterwards    
                     }
@@ -190,63 +192,173 @@
                 }
             }
             document.getElementById('VendorsListed').innerHTML = VendorsListedInHTML.join(""); //after the loop has finished, this line renders all the vendors lines we have previously pushed into VendorsListedInHTML
+
         }
 
         //This function gets the most ocurred rates in each language for the determined services picked, and then 
         //calculates which rate we should asked to the client based on the Mu we have picked.
-        const findMode = () => {
+
+        const findMode_2 = () => {
             let languagesGrouped = {}
             let languagesRatesGrouped = {}
             let vendorsInScopeArr = vendorsInScopeString.map((item) => item.split(","))
-
+            let UIelementWithRates = []
             let tepBox = document.getElementById("TEP").checked;
             let transBox = document.getElementById("TR").checked;
             let prfBox = document.getElementById("PR").checked;
             let indexToBePushed;
             let service;
 
+            let tradRatesGrouped = {}
+            let prfRatesGrouped = {}
+            let tepRatesGrouped = {}
+
+
             //Arranges the vendors in groups based on the language and populates languagesGrouped
             //Arranges the vendors rates in groups based on the language and populates languagesGrouped
-            vendorsInScopeArr.forEach(vendorLineData => {
-                let key = vendorLineData[0];
-                if (!languagesGrouped[key]) {
-                    languagesGrouped[key] = [];
-                }
-                //populating languagesGrouped
-                languagesGrouped[key].push(vendorLineData.slice(1)); // Exclude the first item which is the language and we don't
-                //need it here anymore since the vendor is being added to a group named after their target language
+            vendorsArrayOfObjects.forEach(vendorLineData => {
+                let key = vendorLineData.language;
+
+
 
                 if (transBox) {
-                    indexToBePushed = 2
+
                     service = 'TR'
 
+
+
                 } else if (prfBox) {
-                    indexToBePushed = 3
+
+
                     service = 'PR'
 
 
                 } else if (tepBox) {
-                    indexToBePushed = 4
+
+
                     service = 'TEP'
 
                 }
-                //populating languagesRatesGrouped
-                if (!languagesRatesGrouped[key]) {
-                    languagesRatesGrouped[key] = [];
+
+                if (!tradRatesGrouped[key]) {
+                    tradRatesGrouped[key] = [];
                 }
-                languagesRatesGrouped[key].push(vendorLineData[indexToBePushed])
+                tradRatesGrouped[key].push(vendorLineData.tra)
+
+                if (!prfRatesGrouped[key]) {
+                    prfRatesGrouped[key] = [];
+                } prfRatesGrouped[key].push(vendorLineData.prf)
+
+                if (!tepRatesGrouped[key]) {
+                    tepRatesGrouped[key] = [];
+                } tepRatesGrouped[key].push(vendorLineData.tep)
+
 
             });
 
-            let UIelementWithRates = []
+            const TradMode = () => {
+                let arrayOfRates = [];
+                for (const language in tradRatesGrouped) {
+                    if (tradRatesGrouped.hasOwnProperty(language)) {
+                        sortedRates = tradRatesGrouped[language].sort((a, b) => a - b)
+                        let count = 1
+                        let max = 0
+                        let mostOcurredRate
+
+                        for (let i = 0; i < sortedRates.length; i++) {
+                            if (sortedRates[i] !== '') {  //this line ensures that vendors without rate for the service in scope aren't considered when calculating the most ocurred rate
+
+                                if (sortedRates[i] === sortedRates[i - 1]) {
+                                    count++
+                                } else {
+                                    count = 1
+                                }
+                                if (count > max) {
+                                    max = count;
+                                    mostOcurredRate = sortedRates[i]
+                                }
+
+                            }
+                        }
+
+                        let clientRate = mostOcurredRate * MU   //calculate what rate should we asked base on the MU we need
+                        UIelementWithRates.push(`<b>${language} - ${service}</b><br> Client rate with MU ${MU}: <b>${clientRate.toFixed(3)}</b><br>Most ocurred rate: <b>${mostOcurredRate}</b><br>`)
+                        arrayOfRates.push({ language: language, rate: clientRate })
+                    }
+                }
+                console.log(arrayOfRates);
+                return arrayOfRates
+
+            }
+
+            const PrfMode = () => {
+                let arrayOfRates = [];
+                for (const language in prfRatesGrouped) {
+                    if (prfRatesGrouped.hasOwnProperty(language)) {
+                        sortedRates = prfRatesGrouped[language].sort((a, b) => a - b)
+                        let count = 1
+                        let max = 0
+                        let mostOcurredRate
+
+                        for (let i = 0; i < sortedRates.length; i++) {
+                            if (sortedRates[i] !== '') {  //this line ensures that vendors without rate for the service in scope aren't considered when calculating the most ocurred rate
+
+                                if (sortedRates[i] === sortedRates[i - 1]) {
+                                    count++
+                                } else {
+                                    count = 1
+                                }
+                                if (count > max) {
+                                    max = count;
+                                    mostOcurredRate = sortedRates[i]
+                                }
+
+                            }
+                        }
+
+                        let clientRate = mostOcurredRate * MU   //calculate what rate should we asked base on the MU we need
+                        UIelementWithRates.push(`<b>${language} - ${service}</b><br> Client rate with MU ${MU}: <b>${clientRate.toFixed(3)}</b><br>Most ocurred rate: <b>${mostOcurredRate}</b><br>`)
+                        arrayOfRates.push({ language: language, rate: clientRate })
+                        console.log(arrayOfRates);
+                    }
+                }
+
+                return arrayOfRates
+
+            }
+
+
+            const TepMode = () => {
+                let tradRate = TradMode()
+                let prfRate = PrfMode()
+                console.log(tradRate);
+
+                //UIelementWithRates.push(`<b>${language} - ${service}</b><br> Client rate with MU ${MU}: <b>${clientRate.toFixed(3)}</b><br>Most ocurred rate: <b>${mostOcurredRate}</b><br>`)
+
+
+            }
+
+            if (transBox) {
+
+                TradMode()
+
+            } else if (prfBox) {
+
+                PrfMode()
+
+            } else if (tepBox) {
+
+                TepMode();
+
+            }
+
 
             for (const language in languagesRatesGrouped) {
-
                 if (languagesRatesGrouped.hasOwnProperty(language)) {
                     sortedRates = languagesRatesGrouped[language].sort((a, b) => a - b)
-                    let count = 1,
-                        max = 0,
-                        mostOcurredRate;
+                    let count = 1
+                    let max = 0
+                    let mostOcurredRate
 
                     for (let i = 0; i < sortedRates.length; i++) {
                         if (sortedRates[i] !== '') {  //this line ensures that vendors without rate for the service in scope aren't considered when calculating the most ocurred rate
@@ -263,12 +375,160 @@
 
                         }
                     }
+
                     let clientRate = mostOcurredRate * MU   //calculate what rate should we asked base on the MU we need
                     UIelementWithRates.push(`<b>${language} - ${service}</b><br> Client rate with MU ${MU}: <b>${clientRate.toFixed(3)}</b><br>Most ocurred rate: <b>${mostOcurredRate}</b><br>`)
-                    document.getElementById('RatesList').innerHTML = UIelementWithRates.join("")
                 }
             }
 
+            document.getElementById('RatesList').innerHTML = UIelementWithRates.join("")
+
+        }
+
+
+
+        const findMode = () => {
+            let languagesGrouped = {}
+            let languagesRatesGrouped = {}
+            let vendorsInScopeArr = vendorsInScopeString.map((item) => item.split(","))
+
+            let UIelementWithRates = []
+            let tepBox = document.getElementById("TEP").checked;
+            let transBox = document.getElementById("TR").checked;
+            let prfBox = document.getElementById("PR").checked;
+            let indexToBePushed;
+            let service;
+
+            const TR_MODE = () => {
+                indexToBePushed = 2
+                service = 'TR'
+            }
+            const PR_MODE = () => {
+
+                indexToBePushed = 3
+                service = 'PR'
+            }
+            const TEP_MODE = () => {
+
+                indexToBePushed = 4
+                service = 'TEP'
+
+            }
+
+            //Arranges the vendors in groups based on the language and populates languagesGrouped
+            //Arranges the vendors rates in groups based on the language and populates languagesGrouped
+            vendorsInScopeArr.forEach(vendorLineData => {
+                let key = vendorLineData[0];
+                if (!languagesGrouped[key]) {
+                    languagesGrouped[key] = [];
+                }
+                //populating languagesGrouped
+                languagesGrouped[key].push(vendorLineData.slice(1)); // Exclude the first item which is the language and we don't
+                //need it here anymore since the vendor is being added to a group named after their target language
+
+                if (transBox) {
+                    TR_MODE();
+                } else if (prfBox) {
+                    PR_MODE();
+                } else if (tepBox) {
+                    TEP_MODE();
+
+                }
+                //populating languagesRatesGrouped
+                if (!languagesRatesGrouped[key]) {
+                    languagesRatesGrouped[key] = [];
+                }
+                languagesRatesGrouped[key].push(vendorLineData[indexToBePushed]) //pushing the specific rate depending on the service clicked
+
+            });
+            console.log(languagesRatesGrouped);
+
+            for (const language in languagesRatesGrouped) {
+                if (languagesRatesGrouped.hasOwnProperty(language)) {
+                    sortedRates = languagesRatesGrouped[language].sort((a, b) => a - b)
+                    let count = 1
+                    let max = 0
+                    let mostOcurredRate
+
+                    for (let i = 0; i < sortedRates.length; i++) {
+                        if (sortedRates[i] !== '') {  //this line ensures that vendors without rate for the service in scope aren't considered when calculating the most ocurred rate
+
+                            if (sortedRates[i] === sortedRates[i - 1]) {
+                                count++
+                            } else {
+                                count = 1
+                            }
+                            if (count > max) {
+                                max = count;
+                                mostOcurredRate = sortedRates[i]
+                            }
+
+                        }
+                    }
+
+                    let clientRate = mostOcurredRate * MU   //calculate what rate should we asked base on the MU we need
+                    UIelementWithRates.push(`<b>${language} - ${service}</b><br> Client rate with MU ${MU}: <b>${clientRate.toFixed(3)}</b><br>Most ocurred rate: <b>${mostOcurredRate}</b><br>`)
+                }
+            }
+
+            document.getElementById('RatesList').innerHTML = UIelementWithRates.join("")
+
+        }
+
+        const findTEPMode = () => {
+
+            vendorsInScopeArr.forEach(vendorLineData => {
+                let key = vendorLineData[0];
+                if (!languagesGrouped[key]) {
+                    languagesGrouped[key] = [];
+                }
+                //populating languagesGrouped
+                languagesGrouped[key].push(vendorLineData.slice(1)); // Exclude the first item which is the language and we don't
+                //need it here anymore since the vendor is being added to a group named after their target language
+
+                if (transBox) {
+                    TR_MODE();
+                } else if (prfBox) {
+                    PR_MODE();
+                } else if (tepBox) {
+                    TEP_MODE();
+
+                }
+                //populating languagesRatesGrouped
+                if (!languagesRatesGrouped[key]) {
+                    languagesRatesGrouped[key] = [];
+                }
+                languagesRatesGrouped[key].push(vendorLineData[indexToBePushed]) //pushing the specific rate depending on the service clicked
+
+            });
+
+            for (const language in languagesRatesGrouped) {
+                if (languagesRatesGrouped.hasOwnProperty(language)) {
+                    sortedRates = languagesRatesGrouped[language].sort((a, b) => a - b)
+                    let count = 1
+                    let max = 0
+                    let mostOcurredRate
+
+                    for (let i = 0; i < sortedRates.length; i++) {
+                        if (sortedRates[i] !== '') {  //this line ensures that vendors without rate for the service in scope aren't considered when calculating the most ocurred rate
+
+                            if (sortedRates[i] === sortedRates[i - 1]) {
+                                count++
+                            } else {
+                                count = 1
+                            }
+                            if (count > max) {
+                                max = count;
+                                mostOcurredRate = sortedRates[i]
+                            }
+
+                        }
+                    }
+
+                    let clientRate = mostOcurredRate * MU   //calculate what rate should we asked base on the MU we need
+                    UIelementWithRates.push(`<b>${language} - ${service}</b><br> Client rate with MU ${MU}: <b>${clientRate.toFixed(3)}</b><br>Most ocurred rate: <b>${mostOcurredRate}</b><br>`)
+                }
+            }
         }
 
         //This small function forces the user to only choose one of the services at a time, which improves their UX
