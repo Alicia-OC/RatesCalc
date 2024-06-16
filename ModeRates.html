@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic HTML Table to Excel</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.3/xlsx.core.min.js"></script>
+    <!-- <script type="text/javascript" src="renderjson.js"></script>
+     CSS LAYOUT-->
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <style>
+        body {
+            padding: 2rem;
+            font-size: 16px;
+            background-color: rgb(209, 213, 221);
+        }
+    </style>
+
+    <!-- JAVASCRIPT CODE -->
+    <script>
+        let languagesInScope = []
+        let vendorsInScope = []
+        let vendorsInScopeString = vendorsInScope.map((item) => item.split(","))
+        let result = []
+        let languageGroups = [];
+        let vendorsObject = []
+
+
+        //This function checks the languages we have picked from the list,
+        // then looks into the CSV we have uploaded, selects the vendors whose language matches the ones in scope
+        //populates the vendorsObject and renders the vendor line in the UI
+        function checkLanguagesChexbox(checkboxId) {
+            let VendorsListedInHTML = []
+
+            let checkbox = document.getElementById(checkboxId);
+
+            if (checkbox.checked) {
+                languagesInScope.push(checkboxId);
+            }
+            if (!checkbox.checked) {
+                let index = languagesInScope.indexOf(checkbox.id)
+                const deleteItem = languagesInScope.splice(index, 1)
+            }
+
+            for (let i = 0; i < languagesInScope.length; i++) {
+                //1. this loop goes through all the languages we have chosen
+
+                for (let index = 0; index < arrayOfVendors.length; index++) {
+                    //2. then it loops through all the vendors in the CSV, checks who of those vendors has the language we're looping through atm
+                    // and adds those vendors to the VendorsListedInHTML that will be rendered after both loops have finished 
+
+                    let vendorString = arrayOfVendors[index].substr(1)
+                    let vendorArray = vendorString.split(",") //this line is converting the vendor line into an array, this is needed
+                    //for the next step when we have to access each element as separated info (element language, element vendorId, etc)
+
+                    if (languagesInScope[i] == vendorArray[0]) {
+
+                        if (!vendorsInScope.includes(vendorString)) {
+                            vendorsInScope.push(vendorString)
+                        } else {
+
+                            let index = vendorsInScope.indexOf(vendorString)
+                            //const deleteItem = vendorsInScope.splice(index, 1)
+                        }
+
+                        VendorsListedInHTML.push(`<p id="${vendorArray[1]}"> <b>${vendorArray[0]}: </b>${vendorArray[1]} - ${vendorArray[2]} - ${vendorArray[3]}</p>`); //push the vendor line that will be rendered afterwards 
+                        vendorsObject.push({
+                            language: vendorArray[0],
+                            vendorName: vendorArray[1],
+                            transRate: vendorArray[2],
+                            proofRate: vendorArray[3],
+                            teprate: vendorArray[4]
+                        })
+
+
+                    }
+                }
+            }
+            console.log(vendorsInScope);
+            console.log(vendorsInScopeString);
+            document.getElementById('VendorsListed').innerHTML = VendorsListedInHTML.join(""); //after the loop has finished, this line renders all the vendors lines we have previously pushed into VendorsListedInHTML
+        }
+
+
+        function calculateTEPMU(mu) {
+            let muInnerHTML = []
+            let languageGroups = [];
+
+            let tepBox = document.getElementById("TEP").checked;
+            let transBox = document.getElementById("TR").checked;
+            let prfBox = document.getElementById("PR").checked;
+
+            let B2 = 0.12
+            let B3 = 0.56
+
+            for (let i = 0; i < vendorsObject.length; i++) {
+
+            }
+            //Group the vendors per language in an array
+            vendorsObject.forEach(obj => {
+                if (!languageGroups[obj.language]) {
+                    languageGroups[obj.language] = [];
+                }
+                languageGroups[obj.language].push(obj);
+            });
+
+            for (let language in languageGroups) {
+                //console.log(languageGroups);
+                if (languageGroups.hasOwnProperty(language)) {
+                    let objectsWithSameLanguage = languageGroups[language];
+                    // Perform action on objects with the same language
+                    console.log(`Objects with language ${language}:`, objectsWithSameLanguage);
+                    // Perform your action here
+                }
+            }
+
+            switch (tepBox) {
+                case tepBox:
+                    findMode()
+                    console.log(tepBox);
+                    break;
+                case transBox:
+
+                    break;
+                case prfBox:
+
+                    break;
+
+                default:
+                    break;
+            }
+
+        }
+
+
+        const findMode = (array) => {
+            console.log(array);
+
+            let objectsWithSameLanguage;
+
+            const groupVendorsPerLanguage = () => {
+                array.forEach(obj => {
+                    if (!languageGroups[obj.language]) {
+                        languageGroups[obj.language] = [];
+                    }
+                    languageGroups[obj.language].push(obj);
+                });
+                // console.log(languageGroups);
+                return languageGroups
+            }
+
+            groupVendorsPerLanguage()
+
+
+            for (let language in languageGroups) {
+                console.log(language);
+
+
+                if (languageGroups.hasOwnProperty(language)) {
+                    objectsWithSameLanguage = languageGroups[language];
+                    // Perform action on objects with the same language
+                    //console.log(`Objects with language ${language}:`, objectsWithSameLanguage);
+                    // Perform your action here
+                }
+            }
+
+
+
+            let frequencyMap = {};
+            // Count occurrences of each element
+
+            let arr = []
+            arr.forEach(item => {
+                //console.log(item);
+                frequencyMap[item].transRate = (frequencyMap[item].transRate || 0) + 1;
+            });
+
+            let maxCount = 0;
+            let mostFrequentElement;
+
+            // Find the element with the highest occurrence
+            for (let key in frequencyMap) {
+                if (frequencyMap[key] > maxCount) {
+                    maxCount = frequencyMap[key];
+                    mostFrequentElement = key;
+                }
+            }
+            console.log(mostFrequentElement);
+            //return mostFrequentElement
+
+        }
+
+    </script>
+
+</head>
+
+<body>
+    <div class="cover-container d-flex h-100 p-3 mx-auto flex-column">
+        <div>
+            <p class="lead"><label>Calculate MU based on average rates</label></p>
+            <ol>
+                <li>Add the MU you need to reach.</li>
+                <li>Upload the txt rates table.</li>
+                <li>Click the box of all the languages rates you need</li>
+                <li>Click the Generate MU button</li>
+            </ol>
+        </div>
+
+        <div class="container-fluid"> <label>MU to achieve: </label>
+            <input id="MU" type="number" value="2" min="0" step="0.1" />
+            <input type="checkbox" id="TEP" name="TEP" />
+            <label for="scales">TEP</label>
+            <input type="checkbox" id="TR" name="TR" />
+            <label for="scales">TRA</label>
+            <input type="checkbox" id="PR" name="PR" />
+            <label for="scales">PRF</label>
+            <button onclick="findMode()">test</button>
+            <button onclick="calculateTEPMU(MU)">Generate MU</button>
+        </div>
+
+
+        <div class="container-fluid">
+
+            <label for="jsonFile">File:</label>
+            <input class="btn btn-light rounded-pill px-3" id="csvFile" name="file" type="file" />
+            <br></br>
+            <div id="VendorsListed"></div>
+
+            <div class="rounded p-3 mt-3 text-white" style="background-color: rgba(182, 185, 190, 0.699);" id="json-UI">
+                <div id="myTable"></div>
+            </div>
+
+        </div>
+
+
+        <nav class="navbar bg-dark  fixed-bottom border-bottom border-body text-white">
+            <span class="navbar-brand mb-0 h1">HTML tool to filter JSON files, created by Alicia Olivares canales
+                for my use</span>
+        </nav>
+    </div>
+
+    <script>
+        let MU = 2;
+        let arrayOfVendors;
+        //gets the file and runs the JS code above
+        document.getElementById('csvFile').addEventListener('change', function (event) {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function (event) {
+                const content = event.target.result;
+                arrayOfVendors = content.toString().split("\r"); //converts the CSV data into an array, each vendor line is a string in the array
+
+                let languages = []
+                let inputs = []
+
+                //This loop, loops through all the languages in the CSV, gets 1 of each and renders them 
+                //in the UI with a checkbox that will be used later to tell the code the languages we need
+                for (let i = 0; i < arrayOfVendors.length; i++) {
+                    let item = arrayOfVendors[i].split(",")
+
+                    let itemLanguage = item[0].substr(1)
+
+                    const duplicated = languages.includes(itemLanguage)
+
+                    if (!duplicated && itemLanguage !== '' && itemLanguage !== '#N/A' && itemLanguage !== 'ARGET') {
+                        languages.push(itemLanguage)
+                        inputs.push(`<input type="checkbox" id="${itemLanguage}" onclick="checkLanguagesChexbox('${itemLanguage}')" name="languageBox" />
+                        <label for="${itemLanguage}">${itemLanguage}</label><br>`)
+                    }
+
+                }
+                document.getElementById('myTable').innerHTML = inputs.sort().join("");
+
+            };
+            reader.readAsText(file);
+        });
+
+        document.getElementById('MU').addEventListener('change', function (event) {
+            MU = event.target.value
+            calculateTEPMU(event.target.value)
+        })
+    </script>
+
+</body>
+
+</html>
