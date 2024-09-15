@@ -4,14 +4,14 @@ This is a personal project I have built on my free time.
 
 All the commits in this repo have been manually copied from the original repo because there was sensitive data that couldn't be shared and that I missed in a few commits.
 The date included in each commit description is the original date when the commits where done.
-Yes, it looks ugly, I know. But my GitHub expertise doesn't allow me to re-write the commit history and delete the sensitive data without messing it up, so here we are.
+I know it looks ugly, but my GitHub expertise doesn't allow me to re-write the commit history and delete the sensitive data without messing it up, I'm sure I'll be able to do it with time :)
 
 I'm a Localization project manager and I have created this small app to make my work easier and more automatized.
 
 For this app to work, you need to upload a CSV with this structure:
-A - Source (English only)
-B - Target
-C - Vendor name
+A - Source Language > it will only work with English
+B - Target Language
+C - Vendor name or ID
 D - TR rate
 E - PR rate
 F - TEP rate
