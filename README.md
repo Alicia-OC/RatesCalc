@@ -1,22 +1,38 @@
 # RatesCalc
 
-This is a personal project I have built on my free time.
+# Translation Rate Calculator
 
-All the commits in this repo have been manually copied from the original repo because there was sensitive data that couldn't be shared and that I missed in a few commits.
-The date included in each commit description is the original date when the commits where done.
-I know it looks ugly, but my GitHub expertise doesn't allow me to re-write the commit history and delete the sensitive data without messing it up, I'm sure I'll be able to do it with time :)
+## About
 
-I'm a Localization project manager and I have created this small app to make my work easier and more automatized.
+This is a personal project I built in my free time to make my work as a Localization Project Manager more efficient and automated.  
 
-For this app to work, you need to upload a CSV with this structure:
-A - Source Language > it will only work with English
-B - Target Language
-C - Vendor name or ID
-D - TR rate
-E - PR rate
-F - TEP rate
-Then, it will calculate what rate you should ask your client based on the MarkUp factor: cost price * markup factor (MU)
-Your cost is calculated by the app by getting the most ocurred rate for each chosen language and service.
-The MU factor is provided by the user by tiping it in an input, by default it's 2.
+**Note:** All commits in this repository have been manually copied from the original repository due to sensitive data that couldn't be shared. Some commits were missed, and the date included in each commit description reflects the original commit date. I acknowledge it may look a bit messy, but my GitHub expertise doesn't yet allow me to rewrite commit history and remove sensitive data without causing issues. I'll work on this in the future! 😊
 
-This small app has been programmed only in one HTML file because the main purpose was creating a tool that could be used by anyone without hosting it somewhere. That meant no backend, no packages and basic coding with just a few options for the user.
+## Purpose
+
+The app is designed to be a simple tool for anyone who needs to quickly calculate translation rates based on vendor data. Since the goal was to make it easily accessible without needing to host it, I kept the app simple with no backend, no dependencies, and minimal options for the user.
+
+## How to Use
+
+1. **Upload Your CSV**  
+   Prepare your CSV file and upload it to the app.
+
+2. **CSV Structure**  
+   Ensure your CSV follows this structure:
+   - **A**: Source Language (currently, the app only works with English)
+   - **B**: Target Language
+   - **C**: Vendor Name or ID
+   - **D**: Translation Rate (TR)
+   - **E**: Proofreading Rate (PR)
+   - **F**: TEP (Translation + Editing + Proofreading) Rate
+
+3. **Select Languages**  
+   Choose the target language(s) you want to calculate the rate for. You can select more than one!
+
+4. **Enter Markup**  
+   Input your desired markup factor. The default value is `2`.
+
+5. **Click the Button!**  
+   Once you’ve entered all the information, click the button! The app will calculate the appropriate rate to ask your client based on the most frequent rate for each selected target language and the markup factor:
+   ```text
+   Client Rate = Cost Price * Markup Factor (MU)
